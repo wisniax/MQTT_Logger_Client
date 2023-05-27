@@ -7,42 +7,53 @@ using System.Threading.Tasks;
 
 namespace MQTT_Logger_Client
 {
-	internal class OperationLogger
+	public class OperationLogger
 	{
-		private DateTime operationTime;
-		private string savePath;
+		private DateTime _operationTime;
+		private string _savePath;
+		private string _path;
 		private StreamWriter _sw;
 
 		public OperationLogger()
 		{
-			operationTime = DateTime.Now;
-			savePath = AppDomain.CurrentDomain.BaseDirectory + "Logfile_" +
-					   DateTime.Now.ToShortDateString().Replace('.', '_') + '_' +
-					   DateTime.Now.ToShortTimeString().Replace(':', '_') + ".log";
-			if (File.Exists(savePath))
+			_operationTime = DateTime.Now;
+			_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+			_savePath = _path + "Logfile_" +
+			            DateTime.Now.ToShortDateString().Replace('.', '_') + '_' +
+			            DateTime.Now.ToShortTimeString().Replace(':', '_') + ".log";
+			if (!Directory.Exists(_path)) Directory.CreateDirectory(_path);
+
+			if (File.Exists(_savePath))
+				File.Move(_savePath, Path.ChangeExtension(_savePath, null) + ".old.log");
+			
+			using (StreamWriter sw = File.CreateText(_savePath))
 			{
-				File.Move(savePath, Path.ChangeExtension(savePath, null) + ".old.log");
-			}
-			// Create a file to write to.
-			using StreamWriter sw = File.CreateText(savePath);
-			sw.WriteLine("Hello Log File...");
-			sw.WriteLine($"Logging started: {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}");
-			_sw = File.AppendText(savePath);
+				sw.WriteLine("Hello Log File...");
+				sw.WriteLine($"Logging started: {DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}");
+			};
+
+			_sw = File.AppendText(_savePath);
+			_sw.AutoFlush = true;
 		}
 
 
 		public void LogMessage(string message)
 		{
-			_sw.WriteLine($"--> {(DateTime.Now - operationTime).TotalSeconds}, at: {DateTime.Now.ToShortTimeString()}: {message}");
+			string str =
+				$"> {(int)(DateTime.Now - _operationTime).TotalSeconds}, at: {DateTime.Now.ToShortTimeString()}: {message}";
+
+			_sw.WriteLine(str);
+			Console.WriteLine(str);
 		}
 
 		public void LogFromTopic(string topic, string payload)
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.Append($"--> {(DateTime.Now - operationTime).TotalSeconds}, at: {DateTime.Now.ToShortTimeString()}:");
-			sb.AppendLine($"> From {topic}:");
-			sb.AppendLine($"> ContentL {payload}");
-			
+			sb.Append($"> {(int)(DateTime.Now - _operationTime).TotalSeconds}, at: {DateTime.Now.ToShortTimeString()}:");
+			sb.AppendLine($"--> From {topic}:");
+			if (payload.Length <= 500) sb.AppendLine($"> Content {payload}");
+			else sb.Append($"--> Payload exceeded max length printing first 100 characters: " +
+						   $"--> {payload.AsSpan(0, 100)}");
 			_sw.WriteLine(sb.ToString());
 			Console.WriteLine(sb.ToString());
 		}

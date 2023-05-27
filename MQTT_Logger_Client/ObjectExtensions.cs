@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MQTT_Logger_Client
 {
-	internal static class ObjectExtensions
+	public static class ObjectExtensions
 	{
 		public static TObject DumpToConsole<TObject>(this TObject @object)
 		{
