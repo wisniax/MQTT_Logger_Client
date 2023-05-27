@@ -51,7 +51,7 @@ namespace MQTT_Logger_Client
 		public void LogFromTopic(string topic, string payload)
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.Append($"--> {(int)(DateTime.Now - _operationTime).TotalSeconds}s, at: {DateTime.Now.ToShortTimeString()}:");
+			sb.Append($"> {(int)(DateTime.Now - _operationTime).TotalSeconds}s, at: {DateTime.Now.ToShortTimeString()}:");
 			sb.AppendLine($"--> From: {topic}:");
 			if (payload.Length <= 500) sb.AppendLine($"> Content {payload}");
 			else sb.Append($"--> Payload exceeded max length printing first 100 characters: " +
