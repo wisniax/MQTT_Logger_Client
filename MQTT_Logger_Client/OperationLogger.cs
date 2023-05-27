@@ -18,14 +18,16 @@ namespace MQTT_Logger_Client
 		{
 			_operationTime = DateTime.Now;
 			_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
-			_savePath = _path + "Logfile_" +
-			            DateTime.Now.ToShortDateString().Replace('.', '_') + '_' +
-			            DateTime.Now.ToShortTimeString().Replace(':', '_') + ".log";
+			_savePath = Path.Combine(_path,
+				"Logfile_" 
+				+ DateTime.Now.ToShortDateString().Replace('.', '_') + '_' 
+				+ DateTime.Now.ToShortTimeString().Replace(':', '_') + ".log");
+
 			if (!Directory.Exists(_path)) Directory.CreateDirectory(_path);
 
 			if (File.Exists(_savePath))
 				File.Move(_savePath, Path.ChangeExtension(_savePath, null) + ".old.log");
-			
+
 			using (StreamWriter sw = File.CreateText(_savePath))
 			{
 				sw.WriteLine("Hello Log File...");
@@ -49,8 +51,8 @@ namespace MQTT_Logger_Client
 		public void LogFromTopic(string topic, string payload)
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.Append($"> {(int)(DateTime.Now - _operationTime).TotalSeconds}, at: {DateTime.Now.ToShortTimeString()}:");
-			sb.AppendLine($"--> From {topic}:");
+			sb.Append($"--> {(int)(DateTime.Now - _operationTime).TotalSeconds}s, at: {DateTime.Now.ToShortTimeString()}:");
+			sb.AppendLine($"--> From: {topic}:");
 			if (payload.Length <= 500) sb.AppendLine($"> Content {payload}");
 			else sb.Append($"--> Payload exceeded max length printing first 100 characters: " +
 						   $"--> {payload.AsSpan(0, 100)}");
