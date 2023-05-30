@@ -48,16 +48,18 @@ namespace MQTT_Logger_Client
 			Console.WriteLine(str);
 		}
 
+		StringBuilder _sb = new StringBuilder();
+
 		public void LogFromTopic(string topic, string payload)
 		{
-			StringBuilder sb = new StringBuilder();
-			sb.Append($"> {(int)(DateTime.Now - _operationTime).TotalSeconds}s, at: {DateTime.Now.ToShortTimeString()}:");
-			sb.AppendLine($"--> From: {topic}:");
-			if (payload.Length <= 500) sb.AppendLine($"> Content {payload}");
-			else sb.Append($"--> Payload exceeded max length printing first 100 characters: " +
-						   $"--> {payload.AsSpan(0, 100)}");
-			_sw.WriteLine(sb.ToString());
-			Console.WriteLine(sb.ToString());
+			_sb.Clear();
+			_sb.AppendLine($"> {(int)(DateTime.Now - _operationTime).TotalSeconds}s, at: {DateTime.Now.ToShortTimeString()}:");
+			_sb.AppendLine($"--> From: {topic}:");
+			if (payload.Length <= 500) _sb.AppendLine($"> Content {payload.Normalize()}");
+			else _sb.Append($"--> Payload exceeded max length printing first 100 characters: " + 
+						   $"--> {payload.AsSpan(0, 100).ToString().Normalize()}");
+			_sw.WriteLine(_sb.ToString());
+			Console.WriteLine(_sb.ToString());
 		}
 	}
 }
