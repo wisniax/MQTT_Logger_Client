@@ -14,7 +14,7 @@
 			var cl = new Client()
 			{
 				Topics = Settings?.Settings?.Topics ?? new List<string>(),
-				ServerIp = Settings?.Settings?.ServerIp ?? "127.0.0.1",
+				ServerIp = Settings?.Settings?.ServerIp ?? "127.0.0.1"
 			};
 			await cl.Subscribe_Multiple_Topics();
 		}
