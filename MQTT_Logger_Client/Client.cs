@@ -13,15 +13,16 @@ namespace MQTT_Logger_Client
 	{
 		public string ServerIp { get; set; } = "127.0.0.1";
 		public List<string> Topics { get; set; } = new List<string>();
-
+		private IMqttClient mqttClient;
 		private CurrentTelemetry _telem = new();
 
 		public async Task SubscribeOnTopics()
 		{
 			var mqttFactory = new MqttFactory();
-			using var mqttClient = mqttFactory.CreateMqttClient();
+			mqttClient = mqttFactory.CreateMqttClient();
 			var mqttClientOptions = new MqttClientOptionsBuilder().WithTcpServer(ServerIp).Build();
 			mqttClient.ApplicationMessageReceivedAsync += HandleApplicationMessageReceived;
+			mqttClientOptions.CleanSession = false;
 			await mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None);
 
 			var mqttSubscribeOptionsBuilder = mqttFactory.CreateSubscribeOptionsBuilder();
@@ -30,12 +31,20 @@ namespace MQTT_Logger_Client
 				mqttSubscribeOptionsBuilder.WithTopicFilter(f => f.WithTopic(topic));
 			}
 			var mqttSubscribeOptions = mqttSubscribeOptionsBuilder.Build();
-			
+
 			var response = await mqttClient.SubscribeAsync(mqttSubscribeOptions, CancellationToken.None);
+			mqttClient.DisconnectedAsync += HandleDisconnection;
 
 			Program.Logger.LogMessage("MQTT client subscribed to topics.");
 			Program.Logger.LogMessage("Press enter to exit.");
 			Console.ReadLine();
+		}
+
+		private async Task HandleDisconnection(MqttClientDisconnectedEventArgs arg)
+		{
+			if (mqttClient.IsConnected) return;
+			await mqttClient.ReconnectAsync();
+			//throw new NotImplementedException();
 		}
 
 		private async Task HandleApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)

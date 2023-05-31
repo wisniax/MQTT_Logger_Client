@@ -55,9 +55,9 @@ namespace MQTT_Logger_Client
 			_sb.Clear();
 			_sb.AppendLine($"> {(int)(DateTime.Now - _operationTime).TotalSeconds}s, at: {DateTime.Now.ToShortTimeString()}:");
 			_sb.AppendLine($"--> From: {topic}:");
-			if (payload.Length <= 500) _sb.AppendLine($"> Content {payload.Normalize()}");
-			else _sb.Append($"--> Payload exceeded max length printing first 100 characters: " + 
-						   $"--> {payload.AsSpan(0, 100).ToString().Normalize()}");
+			if (payload.Length <= 5000) _sb.AppendLine($"> Content {payload.Normalize()}");
+			else _sb.Append($"--> Payload exceeded max length printing first 5000 characters: " + 
+						   $"--> {payload.AsSpan(0, 5000).ToString().Normalize()}");
 			_sw.WriteLine(_sb.ToString());
 			Console.WriteLine(_sb.ToString());
 		}
